@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: filmlog-db
+    environment:
+      POSTGRES_DB: filmlog
+      POSTGRES_USER: filmlog
+      POSTGRES_PASSWORD: filmlog
+    ports:
+      - "5433:5432"
+    volumes:
+      - filmlog-db-data:/var/lib/postgresql/data
+
+volumes:
+  filmlog-db-data:
