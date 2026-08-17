@@ -64,7 +64,4 @@ Open http://localhost:5173.
 | PUT    | `/api/movies/{id}`       | Update rating / review / status    |
 | DELETE | `/api/movies/{id}`       | Remove a film                      |
 
-## Notes
 
-Secrets (`.env`) are git-ignored and never committed. The frontend only stores a
-public API base URL, never secrets.
