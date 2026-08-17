@@ -3,10 +3,11 @@ import StarRating from "./StarRating.jsx";
 
 
 export default function AddDialog({ film, onSave, onClose, saving }) {
-    const [status, setStatus] = useState("WATCHED");
-    const [rating, setRating] = useState(0);
-    const [review, setReview] = useState("");
+    const [status, setStatus] = useState(film?.status || "WATCHED");
+    const [rating, setRating] = useState(film?.rating || 0);
+    const [review, setReview] = useState(film?.reviewText || "");
     const [error, setError] = useState("");
+
 
     useEffect(() => {
         function onKey(e) {
@@ -15,6 +16,15 @@ export default function AddDialog({ film, onSave, onClose, saving }) {
         document.addEventListener("keydown", onKey);
         return () => document.removeEventListener("keydown", onKey);
     }, [onClose]);
+
+    useEffect(() => {
+        if (film) {
+            setStatus(film.status || "WATCHED");
+            setRating(film.rating || 0);
+            setReview(film.reviewText || "");
+            setError("");
+        }
+    }, [film]);
 
     if (!film) return null;
 
@@ -25,6 +35,7 @@ export default function AddDialog({ film, onSave, onClose, saving }) {
         }
         onSave({
             tmdbId: film.tmdbId,
+            id: film.id,
             rating: status === "WATCHED" ? rating : null,
             review: review.trim() || null,
             status,
@@ -87,7 +98,7 @@ export default function AddDialog({ film, onSave, onClose, saving }) {
                         Cancel
                     </button>
                     <button className="btn btn--accent" onClick={submit} disabled={saving}>
-                        {saving ? "Saving…" : "Save to diary"}
+                        {saving ? "Saving…" : film.id ? "Update" : "Save to diary"}
                     </button>
                 </div>
             </div>

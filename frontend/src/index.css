@@ -724,3 +724,109 @@ body {
         transition: none !important;
     }
 }
+
+.diary-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+}
+
+.diary-search {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 14px;
+    outline: none;
+}
+
+.diary-search:focus {
+    border-color: var(--accent);
+}
+
+.diary-search::placeholder {
+    color: var(--faint);
+}
+
+.sort-select {
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+}
+
+.sort-select:focus {
+    border-color: var(--accent);
+}
+
+.card__edit {
+    position: absolute;
+    top: 8px;
+    right: 40px;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(20, 17, 28, 0.65);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.card:hover .card__edit {
+    opacity: 1;
+}
+
+.card__edit:hover {
+    background: var(--accent);
+    color: #241a05;
+}
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 18px;
+    text-align: center;
+}
+
+.stat__value {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+
+.stat__label {
+    font-size: 12px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 560px) {
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

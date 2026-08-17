@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import SearchBar from "./components/SearchBar.jsx";
 import SearchResults from "./components/SearchResults.jsx";
 import AddDialog from "./components/AddDialog.jsx";
 import MovieCard from "./components/MovieCard.jsx";
-import { addMovie, deleteMovie, listMovies, searchTmdb } from "./api.js";
+import Stats from "./components/Stats.jsx";
+import {addMovie, deleteMovie, listMovies, searchTmdb, updateMovie} from "./api.js";
 
 const FILTERS = [
-    { key: "ALL", label: "All" },
-    { key: "WATCHED", label: "Watched" },
-    { key: "WATCHLIST", label: "Watchlist" },
+    {key: "ALL", label: "All"},
+    {key: "WATCHED", label: "Watched"},
+    {key: "WATCHLIST", label: "Watchlist"},
 ];
 
 export default function App() {
@@ -22,6 +23,9 @@ export default function App() {
     const [picked, setPicked] = useState(null);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
+
+    const [sortBy, setSortBy] = useState("added");
+    const [diaryQuery, setDiaryQuery] = useState("");
 
     const searchMode = query.length > 0;
 
@@ -59,11 +63,15 @@ export default function App() {
     async function handleSave(payload) {
         setSaving(true);
         try {
-            await addMovie(payload);
+            if (payload.id) {
+                await updateMovie(payload.id, payload);
+            } else {
+                await addMovie(payload);
+            }
             setPicked(null);
             clearSearch();
             await loadDiary(filter);
-            flash("Added to your diary.");
+            flash(payload.id ? "Updated." : "Added to your diary.");
         } catch (e) {
             flash(e.message);
         } finally {
@@ -86,6 +94,30 @@ export default function App() {
         setTimeout(() => setToast(null), 2600);
     }
 
+    const visibleDiary = diary
+        .filter((m) => {
+            const q = diaryQuery.trim().toLowerCase();
+            if (!q) return true;
+            return (
+                m.title.toLowerCase().includes(q) ||
+                (m.director && m.director.toLowerCase().includes(q)) ||
+                (m.genres && m.genres.toLowerCase().includes(q))
+            );
+        })
+        .sort((a, b) => {
+            switch (sortBy) {
+                case "rating":
+                    return (b.rating || 0) - (a.rating || 0);
+                case "year":
+                    return (b.releaseYear || "").localeCompare(a.releaseYear || "");
+                case "title":
+                    return a.title.localeCompare(b.title);
+                case "added":
+                default:
+                    return b.id - a.id;
+            }
+        });
+
     return (
         <div className="app">
             <header className="masthead">
@@ -95,9 +127,9 @@ export default function App() {
                         FILM<span className="wordmark__accent">LOG</span>
                     </div>
                     <p className="tagline">A diary of everything you watch.</p>
-                    <SearchBar onSearch={handleSearch} onClear={clearSearch} />
+                    <SearchBar onSearch={handleSearch} onClear={clearSearch}/>
                 </div>
-                <div className="masthead__rule" />
+                <div className="masthead__rule"/>
             </header>
 
             <main className="main">
@@ -109,10 +141,12 @@ export default function App() {
                             loading={searching}
                             query={query}
                             onPick={setPicked}
+                            loggedIds={new Set(diary.map((m) => m.tmdbId))}
                         />
                     </section>
                 ) : (
                     <section>
+                        {diary.length > 0 && <Stats movies={diary} />}
                         <div className="toolbar">
                             <h2 className="toolbar__title">Your diary</h2>
                             <div className="tabs">
@@ -128,15 +162,40 @@ export default function App() {
                             </div>
                         </div>
 
+                        <div className="diary-controls">
+                            <input
+                                className="diary-search"
+                                type="text"
+                                placeholder="Filter your diary…"
+                                value={diaryQuery}
+                                onChange={(e) => setDiaryQuery(e.target.value)}
+                            />
+                            <select
+                                className="sort-select"
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                            >
+                                <option value="added">Recently added</option>
+                                <option value="rating">Highest rated</option>
+                                <option value="year">Newest year</option>
+                                <option value="title">Title (A–Z)</option>
+                            </select>
+                        </div>
+
                         {diary.length === 0 ? (
                             <div className="empty">
                                 <p className="empty__line">Nothing logged yet.</p>
                                 <p className="empty__hint">Search a film above to start your diary.</p>
                             </div>
+                        ) : visibleDiary.length === 0 ? (
+                            <div className="empty">
+                                <p className="empty__line">No films match your filter.</p>
+                                <p className="empty__hint">Try a different search term.</p>
+                            </div>
                         ) : (
                             <div className="grid">
-                                {diary.map((m) => (
-                                    <MovieCard key={m.id} movie={m} onDelete={handleDelete} />
+                                {visibleDiary.map((m) => (
+                                    <MovieCard key={m.id} movie={m} onDelete={handleDelete} onEdit={setPicked}/>
                                 ))}
                             </div>
                         )}

@@ -10,7 +10,7 @@ const POSTER_FALLBACK =
     </svg>`
     );
 
-export default function MovieCard({ movie, onDelete }) {
+export default function MovieCard({ movie, onDelete, onEdit }) {
     const isWatchlist = movie.status === "WATCHLIST";
 
     return (
@@ -27,6 +27,9 @@ export default function MovieCard({ movie, onDelete }) {
         </span>
                 <button className="card__delete" onClick={() => onDelete(movie)} aria-label={`Remove ${movie.title}`}>
                     ×
+                </button>
+                <button className="card__edit" onClick={() => onEdit(movie)} aria-label={`Edit ${movie.title}`}>
+                    ✎
                 </button>
             </div>
 

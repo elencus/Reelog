@@ -8,7 +8,7 @@ const POSTER_FALLBACK =
     </svg>`
     );
 
-export default function SearchResults({ results, loading, query, onPick }) {
+export default function SearchResults({results, loading, query, onPick, loggedIds}) {
     if (loading) {
         return <p className="results__hint">Searching TMDB for “{query}”…</p>;
     }
@@ -39,9 +39,15 @@ export default function SearchResults({ results, loading, query, onPick }) {
                             ) : null}
                             {r.overview ? <p className="result__overview">{r.overview}</p> : null}
                         </div>
-                        <button className="btn btn--accent result__add" onClick={() => onPick(r)}>
-                            Log this
-                        </button>
+                        {loggedIds.has(r.tmdbId) ? (
+                            <button className="btn btn--ghost result__add" disabled>
+                                Already logged
+                            </button>
+                        ) : (
+                            <button className="btn btn--accent result__add" onClick={() => onPick(r)}>
+                                Log this
+                            </button>
+                        )}
                     </li>
                 ))}
             </ul>
