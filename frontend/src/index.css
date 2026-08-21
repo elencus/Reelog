@@ -830,3 +830,46 @@ body {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+.card__fav {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(20, 17, 28, 0.7);
+    color: #fff;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.15s, color 0.15s;
+}
+
+.card__fav:hover {
+    transform: scale(1.15);
+}
+
+.card__fav.is-fav {
+    color: #e05a7d;
+}
+
+.card__rewatch {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    margin-top: 4px;
+    align-self: flex-start;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.card__rewatch:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}

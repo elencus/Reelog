@@ -90,6 +90,15 @@ public class MovieService {
         Movie movie = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found"));
         applyUserFields(movie, request.rating(), request.review(), request.status());
+
+        if (request.favorite() != null) {
+            movie.setFavorite(request.favorite());
+        }
+
+        if (request.rewatchCount() != null){
+            movie.setRewatchCount(request.rewatchCount());
+        }
+
         return repository.save(movie);
     }
 

@@ -89,6 +89,37 @@ export default function App() {
         }
     }
 
+    async function handleToggleFavorite(movie) {
+        try {
+            await updateMovie(movie.id, {
+                rating: movie.rating,
+                review: movie.reviewText,
+                status: movie.status,
+                favorite: !movie.favorite,
+                rewatchCount: movie.rewatchCount,
+            });
+            await loadDiary(filter);
+        } catch (e) {
+            flash(e.message);
+        }
+    }
+
+    async function handleRewatch(movie) {
+        try {
+            await updateMovie(movie.id, {
+                rating: movie.rating,
+                review: movie.reviewText,
+                status: movie.status,
+                favorite: movie.favorite,
+                rewatchCount: (movie.rewatchCount || 0 ) + 1,
+            });
+            flash("Rewatch logged.");
+            await loadDiary(filter);
+        } catch (e){
+            flash(e.message);
+        }
+    }
+
     function flash(message) {
         setToast(message);
         setTimeout(() => setToast(null), 2600);
@@ -195,7 +226,7 @@ export default function App() {
                         ) : (
                             <div className="grid">
                                 {visibleDiary.map((m) => (
-                                    <MovieCard key={m.id} movie={m} onDelete={handleDelete} onEdit={setPicked}/>
+                                    <MovieCard key={m.id} movie={m} onDelete={handleDelete} onEdit={setPicked} onToggleFavorite={handleToggleFavorite} onRewatch={handleRewatch}/>
                                 ))}
                             </div>
                         )}

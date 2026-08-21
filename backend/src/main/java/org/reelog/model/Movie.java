@@ -41,4 +41,7 @@ public class Movie {
     @Column(nullable = false)
     private String status;
     private LocalDate watchedDate;
+
+    private Boolean favorite = false;
+    private Integer rewatchCount = 0;
 }

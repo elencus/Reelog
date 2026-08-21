@@ -11,5 +11,7 @@ public record UpdateMovieRequest (
 
         @NotNull
         @Pattern(regexp = "WATCHED|WATCHLIST", message = "status must be WATCHED  or WATCHLIST")
-        String status
+        String status,
+        Boolean favorite,
+        Integer rewatchCount
 ) {}

@@ -10,7 +10,7 @@ const POSTER_FALLBACK =
     </svg>`
     );
 
-export default function MovieCard({ movie, onDelete, onEdit }) {
+export default function MovieCard({ movie, onDelete, onEdit, onToggleFavorite,  onRewatch }) {
     const isWatchlist = movie.status === "WATCHLIST";
 
     return (
@@ -31,6 +31,13 @@ export default function MovieCard({ movie, onDelete, onEdit }) {
                 <button className="card__edit" onClick={() => onEdit(movie)} aria-label={`Edit ${movie.title}`}>
                     ✎
                 </button>
+                <button
+                    className={`card__fav ${movie.favorite ? "is-fav" : ""}`}
+                    onClick={() => onToggleFavorite(movie)}
+                    aria-label={movie.favorite ? "Remove from favorites" : "Add to favorites"}
+                >
+                    {movie.favorite ? "♥" : "♡"}
+                </button>
             </div>
 
             <div className="card__body">
@@ -44,6 +51,11 @@ export default function MovieCard({ movie, onDelete, onEdit }) {
                 {!isWatchlist && movie.rating ? <StarRating value={movie.rating} size="sm" /> : null}
 
                 {movie.reviewText && <p className="card__review">{movie.reviewText}</p>}
+                {!isWatchlist && (
+                    <button className="card__rewatch" onClick={() => onRewatch(movie)}>
+                        ↻ Watched {movie.rewatchCount > 0 ? `${movie.rewatchCount + 1}×` : "1×"}
+                    </button>
+                )}
             </div>
         </article>
     );
