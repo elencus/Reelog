@@ -128,6 +128,15 @@ export default function App() {
         setDetailsMovieId(movieId);
     }
 
+    function handlePick(film) {
+        if (!user) {
+            setShowAuth(true);
+            flash("Sign in to start your diary!");
+            return;
+        }
+        setPicked(film);
+    }
+
     async function handleRewatch(movie) {
         try {
             await updateMovie(movie.id, {
@@ -226,7 +235,7 @@ export default function App() {
                             results={results}
                             loading={searching}
                             query={query}
-                            onPick={setPicked}
+                            onPick={handlePick}
                             loggedIds={new Set(diary.map((m) => m.tmdbId))}
                         />
                     </section>
@@ -270,7 +279,7 @@ export default function App() {
 
                         {!user ? (
                             <div className="empty">
-                                <p className="empty__line">Your film diary awats.</p>
+                                <p className="empty__line">Your film diary awaits.</p>
                                 <p className="empty__hint">Sign in to start logging films, or search above to browse.</p>
                             </div>
                         ) : diary.length === 0 ? (
