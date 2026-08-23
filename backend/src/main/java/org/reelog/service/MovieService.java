@@ -56,6 +56,57 @@ public class MovieService {
                 .collect(Collectors.toList());
     }
 
+    public MovieDetails getDetails(Long tmdbId) {
+        TmdbMovie details = tmdb.get()
+                .uri(uri -> uri.path("/movie/{id}")
+                        .queryParam("append_to_response", "credits,videos")
+                        .build(tmdbId))
+                .retrieve()
+                .body(TmdbMovie.class);
+
+        if (details == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "TMDB has no film with id " + tmdbId);
+        }
+
+        List<String> cast = List.of();
+        if (details.credits() != null && details.credits().cast() != null){
+            cast = details.credits().cast().stream()
+                    .map(TmdbMovie.Cast::name)
+                    .limit(8)
+                    .collect(Collectors.toList());
+        }
+
+        String trailerKey = null;
+        if (details.videos() != null && details.videos().results() != null) {
+            var youtubeVideos = details.videos().results().stream()
+                    .filter(v -> "YouTube".equals(v.site()))
+                    .toList();
+
+            trailerKey = youtubeVideos.stream()
+                    .filter(v -> "Trailer".equals(v.type()))
+                    .map(TmdbMovie.Video::key)
+                    .findFirst()
+                    .orElseGet(() -> youtubeVideos.stream()
+                            .map(TmdbMovie.Video::key)
+                            .findFirst()
+                            .orElse(null));
+        }
+
+        return new MovieDetails(
+                details.id(),
+                details.title(),
+                year(details.releaseDate()),
+                posterUrl(details.posterPath()),
+                details.overview(),
+                findDirector(details),
+                joinGenres(details),
+                details.runtime(),
+                details.voteAverage(),
+                cast,
+                trailerKey
+        );
+    }
+
     public Movie add(AddMovieRequest request){
         if (repository.existsByTmdbId(request.tmdbId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This film is already in your diary");
@@ -171,5 +222,29 @@ public class MovieService {
                 .map(TmdbMovie.Crew::name)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public List<SearchResult> similarTo(Long movieId) {
+        Movie movie = repository.findById(movieId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found"));
+
+        TmdbSearchResponse response = tmdb.get()
+                .uri(uri -> uri.path("/movie/{id}/similar").build(movie.getTmdbId()))
+                .retrieve()
+                .body(TmdbSearchResponse.class);
+        if (response == null || response.results() == null){
+            return List.of();
+        }
+
+        return response.results().stream()
+                .filter(m -> !repository.existsByTmdbId(m.id()))
+                .map(m -> new SearchResult(
+                        m.id(),
+                        m.title(),
+                        year(m.releaseDate()),
+                        posterUrl(m.posterPath()),
+                        m.voteAverage(),
+                        m.overview()))
+                .limit(10)
+                .collect(Collectors.toList());
     }
 }

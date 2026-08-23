@@ -3,6 +3,7 @@ package org.reelog.controller;
 
 import jakarta.validation.Valid;
 import org.reelog.dto.AddMovieRequest;
+import org.reelog.dto.MovieDetails;
 import org.reelog.dto.SearchResult;
 import org.reelog.dto.UpdateMovieRequest;
 import org.reelog.model.Movie;
@@ -27,6 +28,11 @@ public class MovieController {
     public List<SearchResult> search(
             @RequestParam("q") String query) {
         return service.search(query);
+    }
+
+    @GetMapping("/details/{tmdbId}")
+    public MovieDetails details(@PathVariable Long tmdbId){
+        return service.getDetails(tmdbId);
     }
 
     @GetMapping
@@ -54,5 +60,10 @@ public class MovieController {
             @PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/similar")
+    public List<SearchResult> similar(@PathVariable Long id) {
+        return service.similarTo(id);
     }
 }

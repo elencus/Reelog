@@ -10,7 +10,7 @@ const POSTER_FALLBACK =
     </svg>`
     );
 
-export default function MovieCard({ movie, onDelete, onEdit, onToggleFavorite,  onRewatch }) {
+export default function MovieCard({ movie, onDelete, onEdit, onToggleFavorite,  onRewatch, onOpenDetails }) {
     const isWatchlist = movie.status === "WATCHLIST";
 
     return (
@@ -21,6 +21,8 @@ export default function MovieCard({ movie, onDelete, onEdit, onToggleFavorite,  
                     src={movie.posterUrl || POSTER_FALLBACK}
                     alt={`${movie.title} poster`}
                     loading="lazy"
+                    onClick={() => onOpenDetails(movie.tmdbId)}
+                    style={{cursor: "pointer"}}
                 />
                 <span className={`badge ${isWatchlist ? "badge--watchlist" : "badge--watched"}`}>
           {isWatchlist ? "Watchlist" : "Watched"}

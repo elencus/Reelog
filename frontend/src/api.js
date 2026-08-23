@@ -20,6 +20,14 @@ export function searchTmdb(query) {
     return fetch(`${BASE}/api/movies/search?q=${encodeURIComponent(query)}`).then(handle);
 }
 
+export function getSimilar(id) {
+    return fetch(`${BASE}/api/movies/${id}/similar`).then(handle);
+}
+
+export function getMovieDetails(tmdbId) {
+    return fetch(`${BASE}/api/movies/details/${tmdbId}`).then(handle);
+}
+
 export function listMovies(status = "ALL") {
     return fetch(`${BASE}/api/movies?status=${status}`).then(handle);
 }

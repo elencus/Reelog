@@ -16,14 +16,24 @@ public record TmdbMovie (
         @JsonProperty("vote_average") Double voteAverage,
         Integer runtime,
         List<Genre> genres,
-        Credits credits
+        Credits credits,
+        Videos videos
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Genre(String name) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Credits(List<Crew> crew) {}
+    public record Credits(List<Crew> crew, List<Cast> cast) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Crew(String name, String job) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Cast(String name, String character) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Videos(List<Video> results) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Video(String key, String site, String type) {}
 }

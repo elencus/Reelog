@@ -4,12 +4,14 @@ import SearchResults from "./components/SearchResults.jsx";
 import AddDialog from "./components/AddDialog.jsx";
 import MovieCard from "./components/MovieCard.jsx";
 import Stats from "./components/Stats.jsx";
+import MovieDetails from "./components/MovieDetails.jsx"
 import {addMovie, deleteMovie, listMovies, searchTmdb, updateMovie} from "./api.js";
 
 const FILTERS = [
     {key: "ALL", label: "All"},
     {key: "WATCHED", label: "Watched"},
     {key: "WATCHLIST", label: "Watchlist"},
+    {key: "FAVORITES", label: "Favorites"},
 ];
 
 export default function App() {
@@ -27,16 +29,23 @@ export default function App() {
     const [sortBy, setSortBy] = useState("added");
     const [diaryQuery, setDiaryQuery] = useState("");
 
+    const [detailsTmdbId, setDetailsTmdbId] = useState(null);
+    const [detailsMovieId, setDetailsMovieId] = useState(null);
+    const [page, setPage] = useState(1);
+    const PER_PAGE = 8;
+
     const searchMode = query.length > 0;
 
     useEffect(() => {
         loadDiary(filter);
+        setPage(1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filter]);
+    }, [filter, diaryQuery, sortBy]);
 
     async function loadDiary(status) {
         try {
-            setDiary(await listMovies(status));
+            const apiStatus = status === "FAVORITES" ? "ALL" : status;
+            setDiary(await listMovies(apiStatus));
         } catch (e) {
             flash(e.message);
         }
@@ -104,6 +113,11 @@ export default function App() {
         }
     }
 
+    function openDetails(tmdbId, movieId = null){
+        setDetailsTmdbId(tmdbId);
+        setDetailsMovieId(movieId);
+    }
+
     async function handleRewatch(movie) {
         try {
             await updateMovie(movie.id, {
@@ -111,11 +125,11 @@ export default function App() {
                 review: movie.reviewText,
                 status: movie.status,
                 favorite: movie.favorite,
-                rewatchCount: (movie.rewatchCount || 0 ) + 1,
+                rewatchCount: (movie.rewatchCount || 0) + 1,
             });
             flash("Rewatch logged.");
             await loadDiary(filter);
-        } catch (e){
+        } catch (e) {
             flash(e.message);
         }
     }
@@ -127,6 +141,7 @@ export default function App() {
 
     const visibleDiary = diary
         .filter((m) => {
+            if (filter === "FAVORITES" && !m.favorite) return false;
             const q = diaryQuery.trim().toLowerCase();
             if (!q) return true;
             return (
@@ -148,6 +163,8 @@ export default function App() {
                     return b.id - a.id;
             }
         });
+    const totalPages = Math.ceil(visibleDiary.length / PER_PAGE);
+    const pagedDiary = visibleDiary.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
     return (
         <div className="app">
@@ -177,7 +194,7 @@ export default function App() {
                     </section>
                 ) : (
                     <section>
-                        {diary.length > 0 && <Stats movies={diary} />}
+                        {diary.length > 0 && <Stats movies={diary}/>}
                         <div className="toolbar">
                             <h2 className="toolbar__title">Your diary</h2>
                             <div className="tabs">
@@ -224,11 +241,37 @@ export default function App() {
                                 <p className="empty__hint">Try a different search term.</p>
                             </div>
                         ) : (
-                            <div className="grid">
-                                {visibleDiary.map((m) => (
-                                    <MovieCard key={m.id} movie={m} onDelete={handleDelete} onEdit={setPicked} onToggleFavorite={handleToggleFavorite} onRewatch={handleRewatch}/>
-                                ))}
-                            </div>
+                            <>
+                                <div className="grid">
+                                    {pagedDiary.map((m) => (
+                                        <MovieCard key={m.id} movie={m} onDelete={handleDelete} onEdit={setPicked}
+                                                   onToggleFavorite={handleToggleFavorite} onRewatch={handleRewatch}
+                                                   onOpenDetails={() => openDetails(m.tmdbId, m.id)}/>
+                                    ))}
+                                </div>
+
+                                {totalPages > 1 && (
+                                    <div className="pagination">
+                                        <button
+                                            className="page-btn"
+                                            onClick={() => setPage((p) => p - 1)}
+                                            disabled={page === 1}
+                                        >
+                                            ← Prev
+                                        </button>
+                                        <span className="page-info mono">
+                                            Page {page} of {totalPages}
+                                        </span>
+                                        <button
+                                            className="page-btn"
+                                            onClick={() => setPage((p) => p + 1)}
+                                            disabled={page === totalPages}
+                                        >
+                                            Next →
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </section>
                 )}
@@ -240,6 +283,8 @@ export default function App() {
                 onClose={() => setPicked(null)}
                 saving={saving}
             />
+
+            <MovieDetails tmdbId={detailsTmdbId} movieId ={detailsMovieId}  onOpenDetails={(tmdbId) => openDetails(tmdbId, null)} onClose={() => {setDetailsTmdbId(null); setDetailsMovieId(null); }}/>
 
             {toast && <div className="toast">{toast}</div>}
         </div>
