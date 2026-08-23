@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: reelog-db
+  namespace: reelog
+spec:
+  serviceName: reelog-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reelog-db
+  template:
+    metadata:
+      labels:
+        app: reelog-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: db-config
+            - secretRef:
+                name: db-secret
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: db-data
+  volumeClaimTemplates:
+    - metadata:
+        name: db-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+

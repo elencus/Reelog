@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: reelog
+  name: reelog-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: reelog.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: reelog-backend
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: reelog-frontend
+                port:
+                  number: 80

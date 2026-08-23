@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: reelog
+data:
+  DB_HOST: 'reelog-db'
+  DB_PORT: "5432"
+  DB_NAME: 'filmlog'
+  DB_USER: 'filmlog'
+  FRONTEND_URL: 'http://reelog.local'

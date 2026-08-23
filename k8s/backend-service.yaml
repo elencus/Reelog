@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reelog-backend
+  namespace: reelog
+spec:
+  selector:
+    app: reelog-backend
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

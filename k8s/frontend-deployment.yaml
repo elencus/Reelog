@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reelog-frontend
+  namespace: reelog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reelog-frontend
+  template:
+    metadata:
+      labels:
+        app: reelog-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: elenataleska/reelog-frontend:latest
+          ports:
+            - containerPort: 80

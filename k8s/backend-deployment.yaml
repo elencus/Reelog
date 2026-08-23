@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reelog-backend
+  namespace: reelog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reelog-backend
+  template:
+    metadata:
+      labels:
+        app: reelog-backend
+    spec:
+      containers:
+        - name: backend
+          image: elenataleska/reelog-backend:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secret
