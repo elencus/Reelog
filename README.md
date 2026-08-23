@@ -1,67 +1,100 @@
-# Reelog 
+# 🎬 Reelog
 
-A personal film diary. Search films via the **TMDB API**, log them with a star
-rating and a short review, and browse your collection — split into *Watched* and
-*Watchlist*.
+A personal film diary. Search films through **TMDB**, log them with star ratings
+and reviews, track what you've watched and what's next, and get recommendations
+based on your taste. Each user has their own private diary.
 
-## Stack
+![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=black)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 
-| Service    | Tech                          | Port |
-|------------|-------------------------------|------|
-| Frontend   | React + Vite                  | 5173 |
-| Backend    | Spring Boot (Java 17), REST   | 8080 |
-| Database   | PostgreSQL                    | 5432 |
-
-TMDB is used only as an external source of film metadata (titles, posters,
-directors). Your own entries live in PostgreSQL.
+---
 
 ## Features
 
-- Live film search through the TMDB API
-- Log films with a 1–5 star rating, a review, and watched/watchlist status
-- Browse your diary with filters
-- Full CRUD (add, view, update, delete)
+- **TMDB search** — find any film and log it in seconds
+- **Personal diary** — rate (1–5★), review, and mark films as *watched* or *watchlist*
+- **Rich detail view** — poster, cast, director, genres, and an embedded trailer
+- **Recommendations** — "similar films" powered by TMDB
+- **Favorites & rewatch tracking** — heart films you love, count rewatches
+- **Stats dashboard** — films watched, average rating, hours logged, top genre
+- **Search, sort & filter** your diary, paginated for larger collections
+- **User accounts** — JWT authentication; every diary is private to its owner
+- **Guest mode** — browse and search without an account; sign in to save
+
+---
+
+## Tech stack
+
+| Layer     | Technology                                       |
+|-----------|--------------------------------------------------|
+| Frontend  | React 18, Vite                                   |
+| Backend   | Spring Boot 3.3 (Java 17), Spring Security, JWT  |
+| Database  | PostgreSQL 16                                    |
+| External  | TMDB API                                         |
+
+The frontend, backend, and database run as three separate services. TMDB is used
+only as a source of film metadata; all user data lives in PostgreSQL.
+
+---
 
 ## Getting started
 
-### 1. Get a TMDB token
-Create an account at [themoviedb.org](https://www.themoviedb.org/), go to
-**Settings → API**, and copy your **API Read Access Token**.
+### Prerequisites
 
-### 2. Start PostgreSQL
+- Java 17+, Maven
+- Node.js 18+
+- Docker (for PostgreSQL)
+- A free [TMDB API Read Access Token](https://www.themoviedb.org/settings/api)
+
+### 1. Start the database
+
 ```bash
 docker run --name filmlog-db -e POSTGRES_DB=filmlog \
   -e POSTGRES_USER=filmlog -e POSTGRES_PASSWORD=filmlog \
   -p 5432:5432 -d postgres:16
 ```
 
-### 3. Run the backend
-Create `backend/.env` with your token:
-TMDB_TOKEN=your_token_here
-DB_HOST=localhost
-DB_NAME=filmlog
-DB_USER=filmlog
-DB_PASSWORD=filmlog
+### 2. Run the backend
 
-Then run the Spring Boot app (from your IDE, or `./mvnw spring-boot:run`).
-The API starts on http://localhost:8080.
+Create `backend/.env` (git-ignored):
+- TMDB_TOKEN=your_tmdb_read_access_token
+- DB_HOST=localhost
+- DB_NAME=filmlog
+- DB_USER=filmlog
+- DB_PASSWORD=filmlog
+- JWT_SECRET=your_long_random_secret_at_least_64_characters_long_for_security
 
-### 4. Run the frontend
+Then run the Spring Boot app from your IDE, or:
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+The API starts on `http://localhost:8080`.
+
+### 3. Run the frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open http://localhost:5173.
 
-## API
+Open `http://localhost:5173`.
 
-| Method | Path                     | Purpose                            |
-|--------|--------------------------|------------------------------------|
-| GET    | `/api/movies/search?q=`  | Search films via TMDB              |
-| GET    | `/api/movies?status=`    | List diary (ALL/WATCHED/WATCHLIST) |
-| POST   | `/api/movies`            | Add a film                         |
-| PUT    | `/api/movies/{id}`       | Update rating / review / status    |
-| DELETE | `/api/movies/{id}`       | Remove a film                      |
+---
 
+## Project structure
+Reelog/
+├── backend/ Spring Boot API (auth, movies, TMDB client, JWT security)
+├── frontend/ React + Vite UI
+└── docker-compose.yml
 
+---
+
+## Security notes
+
+Passwords are hashed with BCrypt. Secrets (`.env`) are never committed. The
+frontend stores only a public API base URL and the user's own JWT.
