@@ -87,12 +87,13 @@ Open `http://localhost:5173`.
 ---
 
 ## Project structure
-Reelog/
-├── backend/ Spring Boot API (auth, movies, TMDB client, JWT security)
-├── frontend/ React + Vite UI
-└── docker-compose.yml
 
----
+```
+Reelog/
+├── backend/          Spring Boot API (auth, movies, TMDB client, JWT security)
+├── frontend/         React + Vite UI
+└── docker-compose.yml
+```
 
 ## Security notes
 
