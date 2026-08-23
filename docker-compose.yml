@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:16
-    container_name: filmlog-db
+    container_name: reelog-db
     environment:
       POSTGRES_DB: filmlog
       POSTGRES_USER: filmlog
@@ -10,6 +10,37 @@ services:
       - "5433:5432"
     volumes:
       - filmlog-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U filmlog"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: reelog-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: filmlog
+      DB_USER: filmlog
+      DB_PASSWORD: filmlog
+      FRONTEND_URL: http://localhost:8081
+      TMDB_TOKEN: ${TMDB_TOKEN}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: reelog-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8081:80"
 
 volumes:
   filmlog-db-data:
