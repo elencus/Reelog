@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import StarRating from "./StarRating.jsx";
 
 
-export default function AddDialog({ film, onSave, onClose, saving }) {
+export default function AddDialog({film, onSave, onClose, saving}) {
     const [status, setStatus] = useState(film?.status || "WATCHED");
     const [rating, setRating] = useState(film?.rating || 0);
     const [review, setReview] = useState(film?.reviewText || "");
@@ -13,6 +13,7 @@ export default function AddDialog({ film, onSave, onClose, saving }) {
         function onKey(e) {
             if (e.key === "Escape") onClose();
         }
+
         document.addEventListener("keydown", onKey);
         return () => document.removeEventListener("keydown", onKey);
     }, [onClose]);
@@ -43,12 +44,14 @@ export default function AddDialog({ film, onSave, onClose, saving }) {
     }
 
     return (
-        <div className="overlay" onClick={onClose}>
+        <div className="overlay" onMouseDown={(e) => {
+            if (e.target === e.currentTarget) onClose();
+        }}>
             <div className="dialog" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
                 <button className="dialog__close" onClick={onClose} aria-label="Close">×</button>
 
                 <div className="dialog__head">
-                    {film.posterUrl && <img className="dialog__poster" src={film.posterUrl} alt="" />}
+                    {film.posterUrl && <img className="dialog__poster" src={film.posterUrl} alt=""/>}
                     <div>
                         <h2 className="dialog__title">{film.title}</h2>
                         <p className="dialog__year mono">{film.year || "—"}</p>
@@ -73,7 +76,7 @@ export default function AddDialog({ film, onSave, onClose, saving }) {
                 {status === "WATCHED" && (
                     <div className="field">
                         <label className="field__label">Your rating</label>
-                        <StarRating value={rating} onChange={setRating} size="lg" />
+                        <StarRating value={rating} onChange={setRating} size="lg"/>
                     </div>
                 )}
 

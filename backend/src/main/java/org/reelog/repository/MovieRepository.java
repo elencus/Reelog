@@ -1,17 +1,19 @@
 package org.reelog.repository;
 
 import org.reelog.model.Movie;
+import org.reelog.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
-@Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
-    boolean existsByTmdbId(Long tmdbId);
+    List<Movie> findByUserOrderByIdDesc(User user);
 
-    List<Movie> findByStatusOrderByIdDesc(String status);
+    List<Movie> findByUserAndStatusOrderByIdDesc(User user, String status);
 
-    List<Movie> findAllByOrderByIdDesc();
+    boolean existsByUserAndTmdbId(User user, Long tmdbId);
+
+    Optional<Movie> findByIdAndUser(Long id, User user);
 }

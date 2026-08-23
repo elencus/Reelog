@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { getMovieDetails, getSimilar } from "../api.js";
+import {useEffect, useState} from "react";
+import {getMovieDetails, getSimilar} from "../api.js";
 
-export default function MovieDetails({ tmdbId, movieId, onOpenDetails, onClose }) {
+export default function MovieDetails({tmdbId, movieId, onOpenDetails, onClose}) {
     const [details, setDetails] = useState(null);
     const [similar, setSimilar] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -11,6 +11,7 @@ export default function MovieDetails({ tmdbId, movieId, onOpenDetails, onClose }
         function onKey(e) {
             if (e.key === "Escape") onClose();
         }
+
         document.addEventListener("keydown", onKey);
         return () => document.removeEventListener("keydown", onKey);
     }, [onClose]);
@@ -38,7 +39,9 @@ export default function MovieDetails({ tmdbId, movieId, onOpenDetails, onClose }
     if (tmdbId == null) return null;
 
     return (
-        <div className="overlay" onClick={onClose}>
+        <div className="overlay" onMouseDown={(e) => {
+            if (e.target === e.currentTarget) onClose();
+        }}>
             <div className="details" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
                 <button className="dialog__close" onClick={onClose} aria-label="Close">×</button>
 
@@ -49,7 +52,7 @@ export default function MovieDetails({ tmdbId, movieId, onOpenDetails, onClose }
                     <>
                         <div className="details__head">
                             {details.posterUrl && (
-                                <img className="details__poster" src={details.posterUrl} alt="" />
+                                <img className="details__poster" src={details.posterUrl} alt=""/>
                             )}
                             <div className="details__info">
                                 <h2 className="details__title">{details.title}</h2>
@@ -106,7 +109,7 @@ export default function MovieDetails({ tmdbId, movieId, onOpenDetails, onClose }
                                             onClick={() => onOpenDetails && onOpenDetails(s.tmdbId)}
                                         >
                                             {s.posterUrl ? (
-                                                <img src={s.posterUrl} alt={s.title} className="similar-poster" />
+                                                <img src={s.posterUrl} alt={s.title} className="similar-poster"/>
                                             ) : (
                                                 <div className="similar-poster similar-poster--empty">no poster</div>
                                             )}

@@ -2,6 +2,7 @@ package org.reelog.service;
 
 import org.reelog.dto.*;
 import org.reelog.model.Movie;
+import org.reelog.model.User;
 import org.reelog.repository.MovieRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,15 @@ public class MovieService {
     private final RestClient tmdb;
     private final MovieRepository repository;
     private final String imageBaseUrl;
+    private final CurrentUser currentUser;
 
     public MovieService(RestClient tmdbRestClient,
                         MovieRepository repository,
-                        @Value("${tmdb.image-base-url}") String imageBaseUrl) {
+                        @Value("${tmdb.image-base-url}") String imageBaseUrl, CurrentUser currentUser) {
         this.tmdb = tmdbRestClient;
         this.repository = repository;
         this.imageBaseUrl = imageBaseUrl;
+        this.currentUser = currentUser;
     }
 
     public List<SearchResult> search(String query){
@@ -108,13 +111,15 @@ public class MovieService {
     }
 
     public Movie add(AddMovieRequest request){
-        if (repository.existsByTmdbId(request.tmdbId())) {
+        User user = currentUser.get();
+        if (repository.existsByUserAndTmdbId(user, request.tmdbId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This film is already in your diary");
         }
 
         TmdbMovie details = fetchDetails(request.tmdbId());
 
         Movie movie = new Movie();
+        movie.setUser(user);
         movie.setTmdbId(details.id());
         movie.setTitle(details.title());
         movie.setReleaseYear(year(details.releaseDate()));
@@ -131,14 +136,16 @@ public class MovieService {
     }
 
     public List<Movie> list(String status) {
+        User user = currentUser.get();
         if (status == null || status.isBlank() || status.equalsIgnoreCase("ALL")) {
-            return repository.findAllByOrderByIdDesc();
+            return repository.findByUserOrderByIdDesc(user);
         }
-        return repository.findByStatusOrderByIdDesc(status.toUpperCase());
+        return repository.findByUserAndStatusOrderByIdDesc(user, status.toUpperCase());
     }
 
     public Movie update(Long id, UpdateMovieRequest request){
-        Movie movie = repository.findById(id)
+        User user = currentUser.get();
+        Movie movie = repository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found"));
         applyUserFields(movie, request.rating(), request.review(), request.status());
 
@@ -154,10 +161,10 @@ public class MovieService {
     }
 
     public void delete(Long id) {
-        if (!repository.existsById(id)){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
-        }
-        repository.deleteById(id);
+        User user = currentUser.get();
+        Movie movie = repository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found"));
+        repository.deleteById(movie.getId());
     }
 
 
@@ -225,7 +232,8 @@ public class MovieService {
     }
 
     public List<SearchResult> similarTo(Long movieId) {
-        Movie movie = repository.findById(movieId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found"));
+        User user = currentUser.get();
+        Movie movie = repository.findByIdAndUser(movieId, user).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found"));
 
         TmdbSearchResponse response = tmdb.get()
                 .uri(uri -> uri.path("/movie/{id}/similar").build(movie.getTmdbId()))
@@ -236,7 +244,7 @@ public class MovieService {
         }
 
         return response.results().stream()
-                .filter(m -> !repository.existsByTmdbId(m.id()))
+                .filter(m -> !repository.existsByUserAndTmdbId(user, m.id()))
                 .map(m -> new SearchResult(
                         m.id(),
                         m.title(),

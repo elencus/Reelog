@@ -6,6 +6,8 @@ import MovieCard from "./components/MovieCard.jsx";
 import Stats from "./components/Stats.jsx";
 import MovieDetails from "./components/MovieDetails.jsx"
 import {addMovie, deleteMovie, listMovies, searchTmdb, updateMovie} from "./api.js";
+import AuthDialog from "./components/AuthDialog.jsx";
+import {getToken, setToken} from "./api.js";
 
 const FILTERS = [
     {key: "ALL", label: "All"},
@@ -15,6 +17,9 @@ const FILTERS = [
 ];
 
 export default function App() {
+    const [user, setUser] = useState(localStorage.getItem("username") || null);
+    const [showAuth, setShowAuth] = useState(false);
+
     const [diary, setDiary] = useState([]);
     const [filter, setFilter] = useState("ALL");
 
@@ -43,6 +48,11 @@ export default function App() {
     }, [filter, diaryQuery, sortBy]);
 
     async function loadDiary(status) {
+        if (!getToken()) {
+            setDiary([]);
+            return;
+        }
+
         try {
             const apiStatus = status === "FAVORITES" ? "ALL" : status;
             setDiary(await listMovies(apiStatus));
@@ -139,6 +149,20 @@ export default function App() {
         setTimeout(() => setToast(null), 2600);
     }
 
+    function handleAuth(username) {
+        localStorage.setItem("username", username);
+        setUser(username);
+        setShowAuth(false);
+        loadDiary(filter);
+    }
+
+    function handleLogout() {
+        setToken(null);
+        localStorage.removeItem("username");
+        setUser(null);
+        setDiary([]);
+    }
+
     const visibleDiary = diary
         .filter((m) => {
             if (filter === "FAVORITES" && !m.favorite) return false;
@@ -169,10 +193,24 @@ export default function App() {
     return (
         <div className="app">
             <header className="masthead">
+                <div className="masthead__topbar">
+                    {user ? (
+                        <div className="user-menu">
+                            <span className="user-menu__name">Welcome, {user}</span>
+                            <button className="btn btn--ghost btn--sm" onClick={handleLogout}>
+                                Sign out
+                            </button>
+                        </div>
+                    ) : (
+                        <button className="btn btn--accent btn--sm" onClick={() => setShowAuth(true)}>
+                            Sign in
+                        </button>
+                    )}
+                </div>
                 <div className="masthead__inner">
                     <div className="wordmark">
                         <span className="wordmark__reel">●</span>
-                        FILM<span className="wordmark__accent">LOG</span>
+                        REE<span className="wordmark__accent">LOG</span>
                     </div>
                     <p className="tagline">A diary of everything you watch.</p>
                     <SearchBar onSearch={handleSearch} onClear={clearSearch}/>
@@ -230,7 +268,12 @@ export default function App() {
                             </select>
                         </div>
 
-                        {diary.length === 0 ? (
+                        {!user ? (
+                            <div className="empty">
+                                <p className="empty__line">Your film diary awats.</p>
+                                <p className="empty__hint">Sign in to start logging films, or search above to browse.</p>
+                            </div>
+                        ) : diary.length === 0 ? (
                             <div className="empty">
                                 <p className="empty__line">Nothing logged yet.</p>
                                 <p className="empty__hint">Search a film above to start your diary.</p>
@@ -283,6 +326,8 @@ export default function App() {
                 onClose={() => setPicked(null)}
                 saving={saving}
             />
+
+            {showAuth && <AuthDialog onClose={() => setShowAuth(false)} onAuth={handleAuth} />}
 
             <MovieDetails tmdbId={detailsTmdbId} movieId ={detailsMovieId}  onOpenDetails={(tmdbId) => openDetails(tmdbId, null)} onClose={() => {setDetailsTmdbId(null); setDetailsMovieId(null); }}/>
 
