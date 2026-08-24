@@ -28,6 +28,23 @@ export default function AuthDialog({onClose, onAuth}) {
 
     async function submit() {
         setError("");
+        if (!username.trim()) {
+            setError("Please enter a username.");
+            return;
+        }
+        if (mode === "register" && !email.trim()) {
+            setError("Please enter an email.");
+            return;
+        }
+        if (!password) {
+            setError("Please enter a password.");
+            return;
+        }
+        if (mode === "register" && password.length < 6) {
+            setError("Password must be at least 6 characters.");
+            return;
+        }
+
         setBusy(true);
         try {
             if (mode === "register") {
@@ -44,6 +61,12 @@ export default function AuthDialog({onClose, onAuth}) {
             setError(e.message);
         } finally {
             setBusy(false);
+        }
+    }
+
+    function handleKeyDown(e) {
+        if (e.key === "Enter" && !busy){
+            submit();
         }
     }
 
@@ -91,6 +114,7 @@ export default function AuthDialog({onClose, onAuth}) {
                         className="field__input"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         autoComplete="off"
                     />
                 </div>
@@ -104,6 +128,8 @@ export default function AuthDialog({onClose, onAuth}) {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             autoComplete="email"
+                            onKeyDown={handleKeyDown}
+
                         />
                     </div>
                 )}
@@ -116,6 +142,8 @@ export default function AuthDialog({onClose, onAuth}) {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         autoComplete={mode === "login" ? "current-password" : "new-password"}
+                        onKeyDown={handleKeyDown}
+
                     />
                 </div>
 

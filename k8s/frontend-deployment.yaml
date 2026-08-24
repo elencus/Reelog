@@ -16,5 +16,6 @@ spec:
       containers:
         - name: frontend
           image: elenataleska/reelog-frontend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
