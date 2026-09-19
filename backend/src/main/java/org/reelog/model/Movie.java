@@ -9,7 +9,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "movies")
+@Table(name = "movies", uniqueConstraints = @UniqueConstraint(columnNames = {"tmdb_id", "user_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +19,7 @@ public class Movie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private Long tmdbId;
 
     @Column(nullable = false)
